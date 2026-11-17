@@ -151,20 +151,20 @@ flowchart LR
 
 | Requirement | Design component | Test case | Status |
 | --- | --- | --- | --- |
-| FR-01–FR-04 | VoiceInput | TC-01, TC-02, TC-03 | Planned |
+| FR-01–FR-04 | VoiceInput | TC-01, TC-02, TC-03 | Implemented |
 | FR-05 | Command parser | TC-04 | Implemented |
-| FR-06–FR-07 | Parser, VolumeControl, dispatcher | TC-05 | Partially implemented |
-| FR-08–FR-10 | Parser, PlaybackControl, dispatcher | TC-06 | Partially implemented |
-| FR-11–FR-12 | Parser, TrackControl, dispatcher | TC-07 | Planned |
-| FR-13 | Command parser, CLI | TC-08 | Partially implemented |
-| FR-14 | Main dispatcher | TC-09 | Planned |
-| FR-15 | Feature modules, backend | TC-10 | Partially implemented |
+| FR-06–FR-07 | Parser, VolumeControl, dispatcher | TC-05 | Implemented |
+| FR-08–FR-10 | Parser, PlaybackControl, dispatcher | TC-06 | Implemented |
+| FR-11–FR-12 | Parser, TrackControl, dispatcher | TC-07 | Implemented |
+| FR-13 | Command parser, CLI | TC-08 | Implemented |
+| FR-14 | Main dispatcher | TC-09 | Implemented |
+| FR-15 | Feature modules, backend | TC-10 | Implemented |
 | NFR-01 | Performance test | TC-11 | Validated in automated test |
-| NFR-02 | Resilience tests | TC-03, TC-10 | Partially implemented |
-| NFR-03 | Architecture review | TC-12 | Partially implemented |
-| NFR-04–NFR-05, SR-05 | GitHub Actions, quality script | TC-13 | Planned |
-| NFR-06 | CLI messages | TC-14 | Planned |
+| NFR-02 | Resilience tests | TC-03, TC-10 | Validated in automated test |
+| NFR-03 | Architecture review | TC-12 | Verified |
+| NFR-04–NFR-05, SR-05 | GitHub Actions, quality script | TC-13 | Implemented (CI workflow added) |
+| NFR-06 | CLI messages | TC-14 | Implemented |
 | SR-01–SR-02 | Voice input, logging review | TC-15 | Validated in automated test |
 | SR-03 | Command parser | TC-08 | Implemented |
-| SR-04 | Voice input, feature modules | TC-03, TC-10 | Partially implemented |
+| SR-04 | Voice input, feature modules | TC-03, TC-10 | Validated in automated test |
 
