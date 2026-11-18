@@ -153,6 +153,8 @@ The SRS RTM maps every FR, NFR, and security requirement to TC-01 through TC-15.
 
 - **TC-11:** an automated test runs the deterministic capture-to-dispatch path
   100 times and requires at least 95 runs to complete within two seconds.
+- **TC-13:** automated GitHub Actions CI workflow (`.github/workflows/ci.yml`)
+  runs Flake8, Bandit, and Pytest on every push and pull request to `main`.
 - **TC-15:** an automated test confirms a normal recognition stores neither an
   audio file nor a transcript, and emits no Python log record.
 
