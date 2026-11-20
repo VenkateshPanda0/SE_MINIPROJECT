@@ -49,6 +49,16 @@ def _default_windows_app_sender(command: int) -> None:
         raise RuntimeError("The foreground application does not support this playback command")
 
 
+def _failure_detail(exc: Exception) -> str:
+    """Short, user-safe reason for a failed playerctl call (never raw tracebacks)."""
+    if isinstance(exc, subprocess.TimeoutExpired):
+        return "playerctl timed out"
+    if isinstance(exc, subprocess.CalledProcessError):
+        lines = str(exc.stderr or "").strip().splitlines()
+        return lines[0][:120] if lines else f"playerctl exited with status {exc.returncode}"
+    return "playerctl could not be started"
+
+
 class OSMediaController(MediaController):
     """Platform media adapter implementing MediaController via OS key events."""
 
@@ -77,7 +87,8 @@ class OSMediaController(MediaController):
             )
         except (OSError, subprocess.SubprocessError) as exc:
             raise RuntimeError(
-                "Media request failed; check the player and desktop session"
+                "Media request failed; check the player and desktop session "
+                f"({_failure_detail(exc)})"
             ) from exc
 
     def volume_up(self) -> None:

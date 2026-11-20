@@ -41,7 +41,8 @@ Provider processing/retention is outside the local application's guarantee.
   MPRIS-compatible player in the same desktop/D-Bus session. For example, use VLC
   with a playlist. `playerctl --list-all` should list it. Volume changes the
   selected player's volume by five percentage points per default step, subject
-  to that player's implementation.
+  to that player's implementation. When `playerctl` fails, the message includes
+  its own reason (for example "No players found").
 - **Other platforms:** Startup fails with an explicit unsupported-platform error.
 
 Run the read-only prerequisite check, then start the application:

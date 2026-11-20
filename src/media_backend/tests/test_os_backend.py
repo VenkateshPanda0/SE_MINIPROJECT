@@ -111,6 +111,43 @@ def test_linux_backend_failures_are_not_reported_as_success(monkeypatch, failure
         OSMediaController().play()
 
 
+@pytest.mark.parametrize("failure, expected_detail", [
+    (
+        subprocess.CalledProcessError(1, "playerctl", stderr="No players found\n"),
+        "No players found",
+    ),
+    (subprocess.CalledProcessError(1, "playerctl", stderr=""), "exited with status 1"),
+    (subprocess.CalledProcessError(2, "playerctl", stderr=None), "exited with status 2"),
+    (subprocess.TimeoutExpired("playerctl", 3), "playerctl timed out"),
+    (OSError("missing"), "playerctl could not be started"),
+])
+def test_linux_failure_message_says_why_playerctl_failed(monkeypatch, failure, expected_detail):
+    monkeypatch.setattr("src.media_backend.os_backend.sys.platform", "linux")
+    monkeypatch.setattr("src.media_backend.os_backend.shutil.which", lambda _: "/usr/bin/playerctl")
+    monkeypatch.setattr(
+        "src.media_backend.os_backend.subprocess.run", MagicMock(side_effect=failure),
+    )
+    with pytest.raises(RuntimeError) as caught:
+        OSMediaController().pause()
+    message = str(caught.value)
+    assert message.startswith("Media request failed")
+    assert expected_detail in message
+
+
+def test_linux_failure_detail_uses_only_the_first_stderr_line_and_is_bounded(monkeypatch):
+    monkeypatch.setattr("src.media_backend.os_backend.sys.platform", "linux")
+    monkeypatch.setattr("src.media_backend.os_backend.shutil.which", lambda _: "/usr/bin/playerctl")
+    noisy = "x" * 500 + "\nsecond line that must not be shown"
+    monkeypatch.setattr(
+        "src.media_backend.os_backend.subprocess.run",
+        MagicMock(side_effect=subprocess.CalledProcessError(1, "playerctl", stderr=noisy)),
+    )
+    with pytest.raises(RuntimeError) as caught:
+        OSMediaController().next_track()
+    assert "second line" not in str(caught.value)
+    assert len(str(caught.value)) < 250
+
+
 @pytest.mark.parametrize("window, delivered, handled", [
     (0, 1, 1), (123, 0, 1), (123, 1, 0), (123, 1, 1),
 ])
