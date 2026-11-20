@@ -110,13 +110,23 @@ def test_capture_returns_none_for_blank_transcription():
     assert build_voice_input(FakeRecognizer("   ")).capture() is None
 
 
-@pytest.mark.parametrize("name", ["listen_timeout", "phrase_time_limit"])
+@pytest.mark.parametrize("name", ["listen_timeout", "phrase_time_limit", "operation_timeout"])
 @pytest.mark.parametrize("value", [0, -1])
 def test_invalid_timeouts_are_rejected(name, value):
     kwargs = {name: value}
 
     with pytest.raises(ValueError):
         VoiceInput(microphone_factory=FakeMicrophone, **kwargs)
+
+
+def test_operation_timeout_defaults_to_five_seconds_and_is_configurable():
+    default = FakeRecognizer()
+    VoiceInput(recognizer=default, microphone_factory=FakeMicrophone)
+    assert default.operation_timeout == 5.0
+
+    custom = FakeRecognizer()
+    VoiceInput(recognizer=custom, microphone_factory=FakeMicrophone, operation_timeout=12.5)
+    assert custom.operation_timeout == 12.5
 
 
 def test_capture_can_succeed_after_a_temporary_failure():

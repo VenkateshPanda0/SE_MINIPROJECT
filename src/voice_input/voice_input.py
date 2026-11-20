@@ -15,14 +15,17 @@ class VoiceInput:
         *,
         listen_timeout: float = 5.0,
         phrase_time_limit: float = 5.0,
+        operation_timeout: float = 5.0,
     ) -> None:
         if listen_timeout <= 0:
             raise ValueError("listen_timeout must be greater than 0")
         if phrase_time_limit <= 0:
             raise ValueError("phrase_time_limit must be greater than 0")
+        if operation_timeout <= 0:
+            raise ValueError("operation_timeout must be greater than 0")
 
         self._recognizer = recognizer or sr.Recognizer()
-        self._recognizer.operation_timeout = 5.0
+        self._recognizer.operation_timeout = operation_timeout
         self._microphone_factory = microphone_factory or sr.Microphone
         self._listen_timeout = listen_timeout
         self._phrase_time_limit = phrase_time_limit
