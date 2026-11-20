@@ -133,11 +133,20 @@ The release is acceptable when all High-priority FRs are implemented and tested,
 
 ## 7. UML use-case diagram
 
-![UML use-case diagram](diagrams/use-case.png)
-
-The user controls volume, playback and tracks. Each use case includes voice-command recognition; the speech-recognition service and desktop media subsystem are external actors. Solid lines show actor associations and dashed arrows show required included behaviour.
-
-See the [diagram guide and requirement mapping](diagrams/README.md), [vector image](diagrams/use-case.svg) and [editable PlantUML source](diagrams/use-case.puml). This use-case view does not imply a processing sequence or completed physical acceptance.
+```mermaid
+flowchart LR
+  User[User] --> Speak([Speak command])
+  Speak -. includes .-> Capture([Capture microphone audio])
+  Capture --> STT[Speech-to-text service]
+  Speak -. includes .-> Recognise([Recognise command])
+  Recognise -. extends .-> Volume([Control volume])
+  Recognise -. extends .-> Playback([Control playback])
+  Recognise -. extends .-> Track([Change track])
+  Recognise -. extends .-> Unsupported([Handle unsupported input])
+  Volume --> Player[OS / Media player]
+  Playback --> Player
+  Track --> Player
+```
 
 ## 8. Requirements traceability matrix
 

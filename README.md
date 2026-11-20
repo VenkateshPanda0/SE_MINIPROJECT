@@ -109,7 +109,6 @@ are tested with mocks. These tests do not replace a physical system demonstratio
 
 - [Requirements and work allocation](REQUIREMENTS.md)
 - [Software Requirements Specification and RTM](docs/SRS.md)
-- [UML use-case diagram and editable source](docs/diagrams/README.md)
 - [Architecture and design](docs/SAD.md)
 - [Test plan](docs/Test_Plan.md)
 - [Validation results and physical demo checklist](docs/VALIDATION.md)
