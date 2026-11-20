@@ -1,10 +1,10 @@
 # Software Test Plan
 
 **Project:** Voice Assistant for Multimedia Controls  
-**Version:** 1.0-draft  
-**Date:** 12 October 2026  
-**Status:** Draft—pending team and instructor approval  
-**References:** SRS v1.0-draft; SAD v1.0-draft
+**Version:** 1.1-validation
+**Date:** 19 November 2026
+**Status:** Automated execution complete; manual system acceptance pending
+**References:** SRS v1.1-validation; SAD v1.1-validation
 
 ## 1. Introduction
 
@@ -55,7 +55,7 @@ Requirements use the identifiers in `docs/SRS.md`. Test cases use the identifier
 
 ### 5.1 Security validation
 
-- Run Bandit against production source and Flake8 against all source modules.
+- Run Bandit against production source, reject scan errors, and run Flake8 against source and scripts. Use pip-audit for known dependency vulnerabilities.
 - Review dependencies for declared/pinned versions before the release.
 - Verify that parser tests reject unexpected text and that no direct shell command is formed from recognised speech.
 - Inspect normal-operation code and logs to confirm it does not save audio/transcripts or write secrets.
@@ -82,10 +82,10 @@ Requirements use the identifiers in `docs/SRS.md`. Test cases use the identifier
 | Area | Configuration |
 | --- | --- |
 | OS | Developer laptop supported by the chosen backend |
-| Runtime | Python 3.12+ virtual environment |
+| Runtime | Python 3.12 and 3.14 virtual environment |
 | Test tools | pytest, unittest.mock, Flake8, Bandit |
 | Hardware test | Default microphone, speakers/headphones, a controllable media player |
-| CI | GitHub Actions running on pull requests and pushes to `main` |
+| CI | GitHub Actions configured for pull requests and pushes to `main`; hosted run pending push |
 | Test doubles | Fake recognizer, microphone factory, and `MediaController` |
 
 ## 7. Test schedule
@@ -143,7 +143,7 @@ Requirements use the identifiers in `docs/SRS.md`. Test cases use the identifier
 | TC-12 | NFR-03 | Source tree available. | Review feature-module imports. | Features only depend on `MediaController`; OS calls are in backend. |
 | TC-13 | NFR-04, NFR-05, SR-05 | CI workflow configured. | Open a PR. | Pytest, Flake8, and Bandit run and report status. |
 | TC-14 | NFR-06 | CLI executable. | Trigger successful, unsupported, and failure paths. | Every path presents an understandable concise message. |
-| TC-15 | SR-01, SR-02 | Source/log configuration available. | Review code and generated logs after test. | No audio/transcript/secrets/device identifier stored or logged. |
+| TC-15 | SR-01, SR-02 | Source/log configuration available. | Review code and generated logs after test. | No intentional local audio/transcript persistence; no transcript in CLI results. External recognition disclosure reviewed. |
 
 ## 12. Traceability summary
 
@@ -153,8 +153,10 @@ The SRS RTM maps every FR, NFR, and security requirement to TC-01 through TC-15.
 
 - **TC-11:** an automated test runs the deterministic capture-to-dispatch path
   100 times and requires at least 95 runs to complete within two seconds.
-- **TC-13:** automated GitHub Actions CI workflow (`.github/workflows/ci.yml`)
-  runs Flake8, Bandit, and Pytest on every push and pull request to `main`.
 - **TC-15:** an automated test confirms a normal recognition stores neither an
   audio file nor a transcript, and emits no Python log record.
 
+
+## 13. Current execution evidence
+
+See [VALIDATION.md](VALIDATION.md) for actual results and the release checklist. Run `python scripts/run_checks.py --audit` to regenerate test, coverage, source-security, and dependency-audit reports. CI enforces at least 90% each for combined, statement, and branch coverage. Physical microphone/player tests and hosted CI execution remain pending. Tests using fakes establish application behavior, not external-service accuracy or physical device success.

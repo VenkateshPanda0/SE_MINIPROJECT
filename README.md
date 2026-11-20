@@ -1,79 +1,111 @@
-# SE_MINIPROJECT
+# Voice Assistant for Multimedia Controls
 
-Voice Assistant for Multimedia Controls: a simple Python assistant that controls volume, playback and tracks using voice commands. See [REQUIREMENTS.md](REQUIREMENTS.md) for the full requirements and work division.
-
-## Project documentation
-
-- [Software Requirements Specification (SRS)](docs/SRS.md)
-- [Software Architecture and Design Specification (SAD)](docs/SAD.md)
-- [Software Test Plan](docs/Test_Plan.md)
-
-## Supported commands
-
-Volume Up, Volume Down, Play, Pause, Resume, Next, Previous. Anything else is ignored without crashing.
+A Python command-line assistant for Volume Up, Volume Down, Play, Pause, Resume,
+Next, and Previous. Unsupported commands cause no media action.
 
 ## Setup
 
-You need Python 3.12 and Git.
+Use Python 3.12 (recommended) or 3.14. From the repository root:
 
-1. Clone the repo and go into the project folder:
-
-```powershell
-   git clone https://github.com/UjwalSanikam/SE_MINIPROJECT.git
-   cd SE_MINIPROJECT
+```bash
+python -m venv .venv
 ```
 
-2. Create and activate a virtual environment (do this once, and activate it every time you open a new terminal):
+Activate with `source .venv/bin/activate` on Linux, or
+`.venv\Scripts\Activate.ps1` in Windows PowerShell. Then:
 
-```powershell
-   python -m venv .venv
-   .venv\Scripts\Activate.ps1
+```bash
+python -m pip install -r requirements-dev.txt
 ```
 
-   If PowerShell blocks the script, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once and try again. On macOS/Linux use `source .venv/bin/activate`.
+For a real microphone, also install:
 
-3. Install the dependencies:
-
-```powershell
-   pip install -r requirements.txt
+```bash
+python -m pip install -r requirements-audio.txt
 ```
 
-4. Run the tests from the repo root:
+On Debian/Ubuntu, building PyAudio may require `portaudio19-dev`, `python3-dev`,
+and a compiler installed through your system package manager. Enable microphone
+access in OS privacy settings. Recognition uses Google's online speech service:
+audio leaves the device for recognition. This project does not intentionally
+save recordings or transcripts, and the CLI prints outcomes rather than speech.
+Provider processing/retention is outside the local application's guarantee.
 
-```powershell
-   python -m pytest -v
+## Platform prerequisites
+
+- **Windows:** Volume and track actions use multimedia keys. Play/pause/resume
+  use explicit `WM_APPCOMMAND` requests to the foreground application. Focus a
+  compatible media-player window before speaking. Unsupported or unresponsive
+  targets report failure. Real player compatibility requires manual testing.
+- **Linux desktop:** Install `playerctl` through your package manager and open an
+  MPRIS-compatible player in the same desktop/D-Bus session. For example, use VLC
+  with a playlist. `playerctl --list-all` should list it. Volume changes the
+  selected player's volume by five percentage points per default step, subject
+  to that player's implementation.
+- **Other platforms:** Startup fails with an explicit unsupported-platform error.
+
+Run the read-only prerequisite check, then start the application:
+
+```bash
+python scripts/preflight.py
+python -m src.main
 ```
 
-### Adding a new dependency
+Say one command at a time. Press Ctrl+C to quit. Aliases include Increase Volume,
+Decrease Volume, Next Track, and Previous Track. Backend success means the
+request was accepted; the application does not independently read playback state.
 
-Install it inside the venv, then refresh the file and commit it with your PR:
+## Verification and reports
 
-```powershell
-pip install <package>
-pip freeze | Out-File -Encoding utf8 requirements.txt
+```bash
+python scripts/run_checks.py
+python scripts/run_checks.py --audit
 ```
 
-Tell the team in your PR description so everyone re-runs `pip install -r requirements.txt` after pulling.
+The second command also audits runtime, development, and optional audio dependencies against vulnerability advisories and requires
+internet access. Both commands run Flake8, Bandit, pytest, and branch coverage.
+Scanner errors and test/check failures produce a nonzero exit status. Test files
+are excluded from production coverage. Coverage gates require at least 90% for
+combined coverage, statement coverage, and branch coverage.
 
-## Project structure
+- `reports/checks.json`: gate results.
+- `reports/pytest.xml`: test results.
+- `reports/coverage.json` and `coverage.xml`: measured coverage.
+- `reports/bandit.json`: source security findings and scan errors.
+- `reports/audit.json`: dependency advisory results when `--audit` is used.
+- `htmlcov/index.html`: browsable annotated coverage report.
+- `reports/preflight.json`: local hardware/tool prerequisites.
 
+GitHub Actions runs the same checks for Windows/Linux and Python 3.12/3.14 on
+pull requests and pushes to `main`, and uploads reports. Hosted execution occurs
+after the workflow is pushed. No automatic desktop deployment is configured.
+Direct dependencies are pinned; transitive versions are resolved at installation
+and should be reviewed when preparing a release.
+
+## Architecture
+
+```text
+Microphone → VoiceInput/STT → Parser → Dispatcher
+                                    → Volume / Playback / Track
+                                    → MediaController → OS backend
 ```
-src/
-  common/          shared Command enum and MediaController interface
-  command_parser/  text to Command mapping, invalid command handling
-  voice_input/     microphone capture, speech-to-text, timeout handling
-  volume/          volume control
-  (more modules are added as each feature merges)
-```
 
-The voice-input feature uses `SpeechRecognition`. Microphone capture also
-requires the platform's PyAudio package to be installed.
+`src/common/` defines the shared command enum and media-controller contract.
+Feature tests inject fake recognizers/controllers and need no real microphone,
+network, or active player. Native Windows calls and Linux subprocess interactions
+are tested with mocks. These tests do not replace a physical system demonstration.
 
-Each module keeps its own tests in a `tests/` folder next to the code.
+## Team workflow
 
-## Workflow
+- Branch from current `main`, using `feature/<name>` or `fix/<name>`.
+- Link each PR to its Jira story and obtain another member's review.
+- Run quality gates before merging and inspect CI artifacts.
+- Update requirements, RTM, and tests when behavior changes.
 
-- Branch from an up-to-date `main`, one branch per feature (`feature/<name>`).
-- No direct pushes to `main`; open a PR and get at least one review from another member.
-- Link the PR to its Jira user story.
-- Run `python -m pytest -v` before pushing.
+## Documentation
+
+- [Requirements and work allocation](REQUIREMENTS.md)
+- [Software Requirements Specification and RTM](docs/SRS.md)
+- [Architecture and design](docs/SAD.md)
+- [Test plan](docs/Test_Plan.md)
+- [Validation results and physical demo checklist](docs/VALIDATION.md)

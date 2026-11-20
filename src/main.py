@@ -1,4 +1,6 @@
 from typing import Callable, Optional
+import sys
+import time
 
 from src.command_parser import parse_command
 from src.common import Command, MediaController
@@ -9,7 +11,7 @@ from src.voice_input import VoiceInput
 from src.volume import VolumeControl
 
 UNKNOWN_MESSAGE = "Command not recognized"
-DEFAULT_VOLUME_STEPS = 5
+DEFAULT_VOLUME_STEPS = 1
 
 
 class Dispatcher:
@@ -49,8 +51,8 @@ def listen_once(
     """Capture one phrase, act on it and report what happened."""
     text = voice_input.capture()
     if text is None:
+        output("No command heard or recognition unavailable. Try again.")
         return
-    output(f'Heard: "{text}"')
     result = dispatcher.handle_text(text)
     if result:
         output(result)
@@ -64,17 +66,23 @@ def run(
 ) -> None:
     while not should_stop():
         listen_once(voice_input, dispatcher, output)
+        time.sleep(0.1)
 
 
-def main() -> None:
-    dispatcher = Dispatcher(OSMediaController())
+def main() -> int:
+    try:
+        dispatcher = Dispatcher(OSMediaController())
+    except RuntimeError as exc:
+        print(f"Cannot start voice assistant: {exc}")
+        return 1
     voice_input = VoiceInput()
     print("Voice assistant ready. Say a command (Ctrl+C to quit).")
     try:
         run(voice_input, dispatcher)
     except KeyboardInterrupt:
         print("\nGoodbye.")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

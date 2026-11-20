@@ -73,11 +73,26 @@ def test_capture_returns_none_for_blank_transcription():
 
 
 @pytest.mark.parametrize("name", ["listen_timeout", "phrase_time_limit"])
-def test_invalid_timeouts_are_rejected(name):
-    kwargs = {name: 0}
+@pytest.mark.parametrize("value", [0, -1])
+def test_invalid_timeouts_are_rejected(name, value):
+    kwargs = {name: value}
 
     with pytest.raises(ValueError):
         VoiceInput(microphone_factory=FakeMicrophone, **kwargs)
+
+
+def test_capture_can_succeed_after_a_temporary_failure():
+    recognizer = FakeRecognizer("Play")
+    voice = build_voice_input(recognizer)
+    original = recognizer.listen
+    def timeout(*args, **kwargs):
+        raise sr.WaitTimeoutError()
+
+    recognizer.listen = timeout
+    assert voice.capture() is None
+    recognizer.listen = original
+    assert voice.capture() == "Play"
+    assert recognizer.operation_timeout == 5.0
 
 
 def test_voice_capture_meets_component_response_target_over_100_runs():

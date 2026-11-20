@@ -77,10 +77,10 @@ The course guidelines require that **each member completes one full functional f
 |---|---|---|---|---|
 | Rohan | Voice Input: microphone capture, speech-to-text, silence/timeout handling | FR1 | `src/voice_input/` | 3 |
 | Ujwal | Command Recognition: text to command mapping, invalid-command handling, main dispatcher loop. Volume Control (up / down, limits) | FR5, FR2 | `src/command_parser/`, `src/main.py`, `src/volume/` | 2 + 1 |
-| Venkatesh | Playback Control: play / pause / resume with playback state | FR3 | `src/playback/` | 2 (+ CI/CD below) |
+| Venkatesh | Playback Control: play / pause / resume with playback state | FR3 | `src/playback/` | 2 (+ CI below) |
 | Yashas | Track Control: next / previous. Media Backend: OS-level media control adapter used by volume, playback and track | FR4 | `src/track/`, `src/media_backend/` | 1 + 2 |
 
-Totals are roughly 3 / 3 / 2+CI / 3 points. Venkatesh's lighter feature is offset by the CI/CD setup below.
+Totals are roughly 3 / 3 / 2+CI / 3 points. Venkatesh's lighter feature is offset by the CI setup below.
 
 ### 7.2 Quality / process ownership
 
@@ -88,7 +88,7 @@ Totals are roughly 3 / 3 / 2+CI / 3 points. Venkatesh's lighter feature is offse
 |---|---|
 | Rohan | Response time of a valid command (target: reasonably fast, e.g. under 2 s) |
 | Ujwal | Security validation and static analysis (SonarQube or similar) |
-| Venkatesh | CI/CD pipeline (Jenkins), unit test and code coverage reports |
+| Venkatesh | CI checks (GitHub Actions), unit test and code coverage reports |
 | Yashas | Jira board and sprint tracking |
 
 Everyone writes their own module's tests (pytest) and fills in their own rows of the requirements traceability matrix.
@@ -110,3 +110,7 @@ Everyone writes their own module's tests (pytest) and fills in their own rows of
 For the first version, the project will focus only on basic voice-based multimedia control.
 
 Additional features can be added later after the basic system is working.
+
+## Implementation update — 19 November 2026
+
+The current implementation targets Windows and Linux desktops, not ESP firmware. All feature modules and the dispatcher are implemented. GitHub Actions is the selected CI system; the historical Jenkins reference has been superseded. `docs/SRS.md` contains the detailed requirement IDs and updated RTM. `docs/VALIDATION.md` separates passing automated checks from pending physical acceptance. No production deployment pipeline is claimed.
