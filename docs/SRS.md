@@ -145,7 +145,7 @@ Automated evidence is summarized in [VALIDATION.md](VALIDATION.md). Real device 
 
 | Requirement | Component | Automated evidence | Status |
 | --- | --- | --- | --- |
-| FR-01–FR-02 | VoiceInput | `voice_input/tests/test_voice_input.py::test_capture_returns_trimmed_transcription` | Pass with fakes; real microphone pending |
+| FR-01–FR-02 | VoiceInput | `voice_input/tests/test_voice_input.py::test_capture_returns_trimmed_transcription`, `test_microphone_unavailable_when_pyaudio_or_device_is_missing`, `tests/test_main.py::test_startup_reports_unavailable_microphone_and_never_listens` | Pass with fakes; real microphone pending |
 | FR-03 | VoiceInput | `test_capture_returns_none_for_unusable_input`, `test_invalid_timeouts_are_rejected` in voice-input suite | Pass |
 | FR-04 | VoiceInput | `test_capture_returns_none_for_unusable_input`, `test_capture_returns_none_for_blank_transcription`, `test_capture_can_succeed_after_a_temporary_failure` | Pass |
 | FR-05 | Parser | `command_parser/tests/test_parser.py::test_normalization_and_aliases` | Pass |
@@ -157,7 +157,7 @@ Automated evidence is summarized in [VALIDATION.md](VALIDATION.md). Real device 
 | FR-15, NFR-02 | Failure boundaries | Feature failure tests; `tests/test_main.py::test_backend_can_recover_after_failure` | Pass |
 | NFR-01 | Processing path | `tests/test_performance_privacy.py::test_command_processing_meets_two_second_target_over_100_runs` | Pass for application overhead; excludes real STT latency |
 | NFR-03 | MediaController interface | Architecture inspection; injected backend tests | Verified in source review |
-| NFR-04–NFR-05 | Quality automation | `scripts/run_checks.py`, `.github/workflows/ci.yml` | Local gates pass; hosted run pending push |
+| NFR-04–NFR-05 | Quality automation | `scripts/run_checks.py`, `.github/workflows/ci.yml`, `tests/test_traceability.py` (fails if this matrix cites a missing test) | Local gates pass; hosted run pending push |
 | NFR-06 | CLI | `tests/test_main.py`; manual message review | Automated checks pass; user evaluation pending |
 | SR-01–SR-02 | Recognition and output | `tests/test_performance_privacy.py::test_voice_input_keeps_audio_and_transcript_in_memory`; `tests/test_main.py::test_listen_once_reports_result_without_disclosing_transcript` | Pass for tested local paths; provider retention outside scope |
 | SR-03 | Parser allow-list | Parser rejection tests | Pass |

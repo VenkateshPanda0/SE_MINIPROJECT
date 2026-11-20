@@ -20,9 +20,9 @@ _ALIASES = {
 
 
 def _normalize(text: str) -> str:
-    """Lowercase, drop punctuation, collapse extra spaces."""
+    """Lowercase, treat punctuation as a space, collapse extra spaces."""
     text = text.lower()
-    text = re.sub(r"[^a-z\s]", "", text)
+    text = re.sub(r"[^a-z\s]", " ", text)
     return " ".join(text.split())
 
 

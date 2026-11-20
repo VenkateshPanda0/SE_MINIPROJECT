@@ -26,6 +26,8 @@ def test_supported_commands(text, expected):
         ("Volume Up!", Command.VOLUME_UP),
         ("  next   track ", Command.NEXT),
         ("increase volume", Command.VOLUME_UP),
+        ("volume-up", Command.VOLUME_UP),
+        ("Next,track.", Command.NEXT),
     ],
 )
 def test_normalization_and_aliases(text, expected):

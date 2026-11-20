@@ -9,10 +9,10 @@ system acceptance and a hosted GitHub Actions run remain pending.
 | --- | --- |
 | Python 3.12, clean virtual environment | Installation and automated gates pass |
 | Python 3.14, project virtual environment | Automated gates pass |
-| pytest | 104 passing tests |
-| Production statement coverage | 247/248 statements, 99.6% |
-| Production branch coverage | 44/46 branches, 95.7% |
-| Combined coverage | 291/294 opportunities, 99.0% |
+| pytest | 167 passing tests (Python 3.12, re-run after the start-up microphone check, parser fix and traceability guard were added) |
+| Production statement coverage | 258/259 statements, 99.6% |
+| Production branch coverage | 48/50 branches, 96.0% |
+| Combined coverage | 306/309 opportunities, 99.0% |
 | Flake8 | Pass for source and scripts |
 | Bandit 1.9.4 | No findings; no scanning errors |
 | pip-audit | No known vulnerabilities in resolved runtime, development, and optional audio dependencies at scan time |
@@ -41,6 +41,12 @@ upstream audio-module deprecation warnings; these are visible in test results.
   can configure repeated volume steps.
 - Recognition has a five-second external-operation timeout. Input-unavailable
   feedback and a loop delay avoid silent busy looping.
+- Start-up exits with status 1 and an explanation when no usable microphone is
+  found, instead of looping on "No command heard" forever.
+- Punctuation in recognized text is treated as a space (SRS FR-05), so
+  `volume-up` is recognized as Volume Up. The alias allow-list is unchanged.
+- A traceability test fails the build when the SRS matrix cites a test or file
+  that does not exist.
 - Recognized transcripts are not printed. Documentation discloses external
   audio processing.
 - Recovery, invalid timeout, backend routing, native-message failure, and

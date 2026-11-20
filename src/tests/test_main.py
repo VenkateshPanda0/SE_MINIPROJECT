@@ -43,6 +43,9 @@ class FakeVoice:
     def capture(self):
         return self._texts.pop(0) if self._texts else None
 
+    def is_microphone_available(self):
+        return True
+
 
 @pytest.mark.parametrize(
     "text, expected_call",
@@ -110,6 +113,27 @@ def test_startup_reports_unavailable_backend(monkeypatch, capsys):
     monkeypatch.setattr("src.main.OSMediaController", unavailable)
     assert main() == 1
     assert "Cannot start" in capsys.readouterr().out
+
+
+def test_startup_reports_unavailable_microphone_and_never_listens(monkeypatch, capsys):
+    from src.main import main
+
+    class NoMicrophone(FakeVoice):
+        def is_microphone_available(self):
+            return False
+
+    def must_not_run(*args):
+        raise AssertionError("the listen loop must not start without a microphone")
+
+    monkeypatch.setattr("src.main.OSMediaController", FakeController)
+    monkeypatch.setattr("src.main.VoiceInput", NoMicrophone)
+    monkeypatch.setattr("src.main.run", must_not_run)
+
+    assert main() == 1
+    output = capsys.readouterr().out
+    assert "Cannot start" in output
+    assert "microphone" in output
+    assert "ready" not in output
 
 
 def test_listen_once_reports_result_without_disclosing_transcript():

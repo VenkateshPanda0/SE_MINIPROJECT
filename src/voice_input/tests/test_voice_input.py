@@ -68,17 +68,65 @@ def test_capture_returns_none_for_unusable_input(error):
     assert build_voice_input(ErrorRecognizer()).capture() is None
 
 
+def test_microphone_available_when_it_can_be_opened():
+    opened = []
+
+    class TrackingMicrophone(FakeMicrophone):
+        def __enter__(self):
+            opened.append("enter")
+            return super().__enter__()
+
+        def __exit__(self, *exc_info):
+            opened.append("exit")
+            return super().__exit__(*exc_info)
+
+    voice = VoiceInput(recognizer=FakeRecognizer(), microphone_factory=TrackingMicrophone)
+
+    assert voice.is_microphone_available() is True
+    assert opened == ["enter", "exit"]
+
+
+@pytest.mark.parametrize("error", [AttributeError, OSError])
+def test_microphone_unavailable_when_pyaudio_or_device_is_missing(error):
+    def broken_factory():
+        raise error("no audio device")
+
+    voice = VoiceInput(recognizer=FakeRecognizer(), microphone_factory=broken_factory)
+
+    assert voice.is_microphone_available() is False
+
+
+def test_microphone_check_does_not_hide_unexpected_errors():
+    def buggy_factory():
+        raise ValueError("programming error")
+
+    voice = VoiceInput(recognizer=FakeRecognizer(), microphone_factory=buggy_factory)
+
+    with pytest.raises(ValueError):
+        voice.is_microphone_available()
+
+
 def test_capture_returns_none_for_blank_transcription():
     assert build_voice_input(FakeRecognizer("   ")).capture() is None
 
 
-@pytest.mark.parametrize("name", ["listen_timeout", "phrase_time_limit"])
+@pytest.mark.parametrize("name", ["listen_timeout", "phrase_time_limit", "operation_timeout"])
 @pytest.mark.parametrize("value", [0, -1])
 def test_invalid_timeouts_are_rejected(name, value):
     kwargs = {name: value}
 
     with pytest.raises(ValueError):
         VoiceInput(microphone_factory=FakeMicrophone, **kwargs)
+
+
+def test_operation_timeout_defaults_to_five_seconds_and_is_configurable():
+    default = FakeRecognizer()
+    VoiceInput(recognizer=default, microphone_factory=FakeMicrophone)
+    assert default.operation_timeout == 5.0
+
+    custom = FakeRecognizer()
+    VoiceInput(recognizer=custom, microphone_factory=FakeMicrophone, operation_timeout=12.5)
+    assert custom.operation_timeout == 12.5
 
 
 def test_capture_can_succeed_after_a_temporary_failure():
