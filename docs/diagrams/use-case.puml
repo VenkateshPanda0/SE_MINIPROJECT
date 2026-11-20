@@ -1,0 +1,52 @@
+@startuml
+title Voice Assistant for Multimedia Controls
+UML use-case diagram
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam defaultFontName Arial
+skinparam usecaseBackgroundColor #F2F7FB
+skinparam usecaseBorderColor #245E91
+skinparam rectangleBorderColor #24374B
+
+actor "User" as User
+actor "Google speech
+recognition service" as Speech
+actor "Desktop media
+subsystem / player" as Media
+
+rectangle "Voice Assistant for Multimedia Controls" {
+  usecase "Control volume
+Volume Up / Volume Down" as Volume
+  usecase "Control playback
+Play / Pause / Resume" as Playback
+  usecase "Navigate tracks
+Next / Previous" as Tracks
+  usecase "Recognise voice command
+Capture, transcribe and match" as Recognise
+
+  Volume ..> Recognise : <<include>>
+  Playback ..> Recognise : <<include>>
+  Tracks ..> Recognise : <<include>>
+}
+
+User -- Volume
+User -- Playback
+User -- Tracks
+Speech -- Recognise
+Media -- Volume
+Media -- Playback
+Media -- Tracks
+
+note bottom of Recognise
+  Supported phrases use a fixed allow-list.
+  Unavailable or unsupported input causes no media action.
+end note
+
+legend bottom
+  Solid line: actor association
+  Dashed arrow: included behaviour required by the base use case
+  Windows: multimedia keys and foreground WM_APPCOMMAND
+  Linux: playerctl / MPRIS
+endlegend
+@enduml
