@@ -27,6 +27,18 @@ class VoiceInput:
         self._listen_timeout = listen_timeout
         self._phrase_time_limit = phrase_time_limit
 
+    def is_microphone_available(self) -> bool:
+        """Return True if the microphone can be opened (PyAudio present, input device found).
+
+        Lets the application fail once, with a clear message, instead of retrying a
+        device that can never work. Recognition itself is not attempted.
+        """
+        try:
+            with self._microphone_factory():
+                return True
+        except (AttributeError, OSError):
+            return False
+
     def capture(self) -> str | None:
         """Return the recognized phrase, or None when no usable phrase exists."""
         try:

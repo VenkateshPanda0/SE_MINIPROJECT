@@ -68,6 +68,44 @@ def test_capture_returns_none_for_unusable_input(error):
     assert build_voice_input(ErrorRecognizer()).capture() is None
 
 
+def test_microphone_available_when_it_can_be_opened():
+    opened = []
+
+    class TrackingMicrophone(FakeMicrophone):
+        def __enter__(self):
+            opened.append("enter")
+            return super().__enter__()
+
+        def __exit__(self, *exc_info):
+            opened.append("exit")
+            return super().__exit__(*exc_info)
+
+    voice = VoiceInput(recognizer=FakeRecognizer(), microphone_factory=TrackingMicrophone)
+
+    assert voice.is_microphone_available() is True
+    assert opened == ["enter", "exit"]
+
+
+@pytest.mark.parametrize("error", [AttributeError, OSError])
+def test_microphone_unavailable_when_pyaudio_or_device_is_missing(error):
+    def broken_factory():
+        raise error("no audio device")
+
+    voice = VoiceInput(recognizer=FakeRecognizer(), microphone_factory=broken_factory)
+
+    assert voice.is_microphone_available() is False
+
+
+def test_microphone_check_does_not_hide_unexpected_errors():
+    def buggy_factory():
+        raise ValueError("programming error")
+
+    voice = VoiceInput(recognizer=FakeRecognizer(), microphone_factory=buggy_factory)
+
+    with pytest.raises(ValueError):
+        voice.is_microphone_available()
+
+
 def test_capture_returns_none_for_blank_transcription():
     assert build_voice_input(FakeRecognizer("   ")).capture() is None
 

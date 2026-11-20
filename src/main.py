@@ -76,6 +76,13 @@ def main() -> int:
         print(f"Cannot start voice assistant: {exc}")
         return 1
     voice_input = VoiceInput()
+    if not voice_input.is_microphone_available():
+        print(
+            "Cannot start voice assistant: no usable microphone. Install "
+            "requirements-audio.txt, allow microphone access, and run "
+            "scripts/preflight.py to diagnose."
+        )
+        return 1
     print("Voice assistant ready. Say a command (Ctrl+C to quit).")
     try:
         run(voice_input, dispatcher)
