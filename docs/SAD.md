@@ -168,6 +168,7 @@ The dispatcher owns no OS-specific logic. Its algorithm is:
 | --- | --- | --- |
 | Silence/recognition timeout | Return no text; do not raise. | `No command heard or recognition unavailable. Try again.` |
 | Unknown speech/STT unavailable | Return no text; do not expose provider details. | `No command heard or recognition unavailable. Try again.` |
+| Microphone or PyAudio unavailable at start-up | `main` asks `VoiceInput.is_microphone_available()` before listening and exits with status 1 instead of retrying a device that cannot work. | `Cannot start voice assistant: no usable microphone. ...` |
 | Unsupported text | Do not invoke a feature/backend. | `Command not recognized` |
 | Backend operation fails | Catch exception at feature boundary; preserve valid state. | `Playback/volume/track action failed.` |
 | Programmer/configuration error | Log safe technical context for developers; fail test/CI. | Not exposed as sensitive implementation detail. |

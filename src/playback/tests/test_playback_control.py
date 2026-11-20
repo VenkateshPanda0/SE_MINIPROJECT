@@ -66,3 +66,41 @@ def test_backend_failure_returns_message_and_preserves_state(
     assert label in msg
     assert "failed" in msg
     assert "backend unavailable" in msg
+
+
+def test_play_pause_resume_sequence_tracks_state(playback, controller):
+    """TC-06: each command reaches the backend and state follows after success."""
+    states = []
+    for operation in (playback.play, playback.pause, playback.resume, playback.pause):
+        operation()
+        states.append(playback.state)
+
+    assert states == [
+        PlaybackState.PLAYING,
+        PlaybackState.PAUSED,
+        PlaybackState.PLAYING,
+        PlaybackState.PAUSED,
+    ]
+    assert controller.play.call_count == 1
+    assert controller.pause.call_count == 2
+    assert controller.resume.call_count == 1
+
+
+def test_failed_command_does_not_block_later_success(playback, controller):
+    """TC-10 / FR-15: after a backend failure a later command is still handled."""
+    controller.play.side_effect = [RuntimeError("player busy"), None]
+
+    assert "failed" in playback.play()
+    assert playback.state is PlaybackState.STOPPED
+
+    assert playback.play() == "Playback started"
+    assert playback.state is PlaybackState.PLAYING
+
+
+def test_failure_after_playing_keeps_playing_state(playback, controller):
+    """TC-10: state is preserved when a later request fails."""
+    playback.play()
+    controller.pause.side_effect = RuntimeError("player busy")
+
+    assert "Pause failed" in playback.pause()
+    assert playback.state is PlaybackState.PLAYING

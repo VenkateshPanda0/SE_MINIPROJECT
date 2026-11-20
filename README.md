@@ -51,6 +51,9 @@ python scripts/preflight.py
 python -m src.main
 ```
 
+If no usable microphone is found (for example PyAudio is not installed), the
+application exits with status 1 and says so instead of waiting for speech.
+
 Say one command at a time. Press Ctrl+C to quit. Aliases include Increase Volume,
 Decrease Volume, Next Track, and Previous Track. Backend success means the
 request was accepted; the application does not independently read playback state.
