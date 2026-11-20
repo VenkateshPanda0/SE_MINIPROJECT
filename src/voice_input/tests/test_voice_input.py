@@ -85,6 +85,7 @@ def test_capture_can_succeed_after_a_temporary_failure():
     recognizer = FakeRecognizer("Play")
     voice = build_voice_input(recognizer)
     original = recognizer.listen
+
     def timeout(*args, **kwargs):
         raise sr.WaitTimeoutError()
 
