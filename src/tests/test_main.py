@@ -93,17 +93,50 @@ def test_backend_failure_does_not_crash():
     assert "failed" in result
 
 
-def test_listen_once_reports_heard_text_and_result():
+def test_backend_can_recover_after_failure():
+    controller = FakeController(fail=True)
+    dispatcher = Dispatcher(controller)
+    assert "failed" in dispatcher.handle_text("play")
+    controller.fail = False
+    assert dispatcher.handle_text("play") == "Playback started"
+
+
+def test_startup_reports_unavailable_backend(monkeypatch, capsys):
+    from src.main import main
+
+    def unavailable():
+        raise RuntimeError("No supported backend")
+
+    monkeypatch.setattr("src.main.OSMediaController", unavailable)
+    assert main() == 1
+    assert "Cannot start" in capsys.readouterr().out
+
+
+def test_listen_once_reports_result_without_disclosing_transcript():
     outputs = []
     dispatcher = Dispatcher(FakeController())
     listen_once(FakeVoice("volume up"), dispatcher, output=outputs.append)
-    assert outputs == ['Heard: "volume up"', "Volume increased"]
+    assert outputs == ["Volume increased"]
 
 
-def test_listen_once_prints_nothing_on_silence():
+def test_listen_once_reports_unavailable_input_without_a_transcript():
     outputs = []
     listen_once(FakeVoice(), Dispatcher(FakeController()), output=outputs.append)
-    assert outputs == []
+    assert outputs == ["No command heard or recognition unavailable. Try again."]
+
+
+def test_main_handles_keyboard_interrupt(monkeypatch, capsys):
+    from src.main import main
+
+    monkeypatch.setattr("src.main.OSMediaController", FakeController)
+    monkeypatch.setattr("src.main.VoiceInput", FakeVoice)
+
+    def interrupted(*args):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr("src.main.run", interrupted)
+    assert main() == 0
+    assert "Goodbye" in capsys.readouterr().out
 
 
 def test_run_processes_phrases_until_stopped():

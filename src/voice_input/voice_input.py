@@ -22,6 +22,7 @@ class VoiceInput:
             raise ValueError("phrase_time_limit must be greater than 0")
 
         self._recognizer = recognizer or sr.Recognizer()
+        self._recognizer.operation_timeout = 5.0
         self._microphone_factory = microphone_factory or sr.Microphone
         self._listen_timeout = listen_timeout
         self._phrase_time_limit = phrase_time_limit

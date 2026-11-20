@@ -1,10 +1,10 @@
 # Software Architecture and Design Specification
 
 **Project:** Voice Assistant for Multimedia Controls  
-**Version:** 1.0-draft  
-**Date:** 12 October 2026  
-**Status:** Draft—pending team and instructor approval  
-**Related documents:** SRS v1.0-draft; Test Plan v1.0-draft
+**Version:** 1.1-validation
+**Date:** 19 November 2026
+**Status:** Implemented; physical system validation pending
+**Related documents:** SRS v1.1-validation; Test Plan v1.1-validation
 
 ## 1. Introduction
 
@@ -66,7 +66,7 @@ flowchart LR
 
 ### 2.5 Technology choices
 
-Python 3.12+ is used with pytest for tests, SpeechRecognition (or an approved substitute) for voice capture, and Flake8/Bandit for quality checks. A concrete backend will be chosen for the team’s actual target platform and isolated behind the existing interface.
+Python 3.12+ is used with pytest for tests, SpeechRecognition (or an approved substitute) for voice capture, and Flake8/Bandit for quality checks. The backend supports Windows multimedia keys and explicit foreground WM_APPCOMMAND playback, plus Linux playerctl/MPRIS. Missing tools and unsupported platforms produce explicit errors.
 
 ### 2.6 Requirement traceability
 
@@ -90,8 +90,8 @@ Python 3.12+ is used with pytest for tests, SpeechRecognition (or an approved su
 | Unexpected spoken/text input triggers an unsafe action | Parser uses a fixed allow-list and returns no command for all other input. |
 | STT service or microphone fails | Voice input catches expected failures and returns a safe no-input result. |
 | Backend failure crashes application | Feature modules catch backend exceptions and return controlled failure messages. |
-| Audio/transcript privacy exposure | No normal-operation persistence; logs exclude audio, transcripts, secrets, and device identifiers. |
-| Vulnerable or low-quality source reaches main | Pull-request CI runs pytest, Flake8, and Bandit. |
+| Audio/transcript privacy exposure | No intentional local audio/transcript persistence; CLI prints results, never recognized text. Audio is sent to Google for recognition. |
+| Vulnerable or low-quality source reaches main | The configured pull-request workflow runs pytest, coverage, Flake8, Bandit, and pip-audit; hosted execution must be checked after push. |
 
 ## 3. Detailed design
 
@@ -105,7 +105,7 @@ Python 3.12+ is used with pytest for tests, SpeechRecognition (or an approved su
 | --- | --- | --- | --- |
 | VoiceInput | `capture()` | None | `str` recognised text, or `None` for timeout, unrecognised speech, blank text, service/device failure. |
 | Parser | `parse_command(text)` | `str | None` | `Command | None`; no exception for unsupported/blank input. |
-| Dispatcher | `dispatch(command)` | `Command` | User-facing success/failure message. |
+| Dispatcher | `handle_text(text)` | `str | None` | User-facing success/failure message. |
 | VolumeControl | `increase()`, `decrease()` | None | Success/failure message; invokes matching port method. |
 | PlaybackControl | `play()`, `pause()`, `resume()` | None | Success/failure message; changes state only after success. |
 | TrackControl | `next()`, `previous()` | None | Success/failure message. |
@@ -159,28 +159,28 @@ The dispatcher owns no OS-specific logic. Its algorithm is:
 1. Call `VoiceInput.capture()`.
 2. If the result is absent, show an input-unavailable/try-again message and continue.
 3. Pass text to `parse_command()`.
-4. If no `Command` is returned, show `Unsupported command` and do not call the backend.
+4. If no `Command` is returned, show `Command not recognized` and do not call the backend.
 5. Route exactly one command to its feature module, show that module’s result, and continue for the next command.
 
 ### 3.6 Error handling and logging
 
 | Condition | Handling | User message |
 | --- | --- | --- |
-| Silence/recognition timeout | Return no text; do not raise. | `No command heard. Try again.` |
-| Unknown speech/STT unavailable | Return no text; do not expose provider details. | `Could not recognise a command. Try again.` |
-| Unsupported text | Do not invoke a feature/backend. | `Unsupported command.` |
+| Silence/recognition timeout | Return no text; do not raise. | `No command heard or recognition unavailable. Try again.` |
+| Unknown speech/STT unavailable | Return no text; do not expose provider details. | `No command heard or recognition unavailable. Try again.` |
+| Unsupported text | Do not invoke a feature/backend. | `Command not recognized` |
 | Backend operation fails | Catch exception at feature boundary; preserve valid state. | `Playback/volume/track action failed.` |
 | Programmer/configuration error | Log safe technical context for developers; fail test/CI. | Not exposed as sensitive implementation detail. |
 
 Logs must not contain audio, raw transcripts, credentials, or device identifiers. Error messages presented to the user must be concise and avoid stack traces.
 
-### 3.7 Open issues and next steps
+### 3.7 Implementation and remaining validation
 
-- Select and implement the actual OS/media-player adapter.
-- Implement `TrackControl` and the dispatcher loop.
-- Resolve and merge the voice-input PR after dependency/device-failure review.
-- Add GitHub Actions for test, lint, and Bandit checks.
-- Validate the selected backend with physical microphone/media-player system testing.
+All feature modules and dispatcher are implemented. Windows play/resume use explicit PLAY (46), while pause uses PAUSE (47), avoiding toggle-state errors. Linux uses distinct playerctl `play` and `pause` operations. Native interactions are mocked in automated tests; real device evidence is pending.
+
+The shared quality runner rejects scanner errors as well as findings, measures branch coverage with 90% minimums for combined, statement, and branch coverage, and saves JSON/XML/HTML evidence. GitHub Actions targets Windows/Linux and Python 3.12/3.14. No automatic production deployment is configured for this desktop application.
+
+The command loop does not print transcripts. A short delay avoids a busy loop when input is unavailable. Recognition operation requests have a five-second timeout. Hardware, permissions, network, and media-player behavior still require [manual validation](VALIDATION.md).
 
 ## 4. Appendices
 
@@ -190,5 +190,5 @@ Python, pytest, unittest.mock, Flake8, Bandit, GitHub Actions, and Mermaid/Plant
 
 ### 4.2 Approval
 
-This draft requires review and sign-off by all team members and the course instructor before formal submission.
+Automated validation is recorded in VALIDATION.md. Team/instructor sign-off and physical device acceptance remain pending; no approval is inferred from passing automated tests.
 
